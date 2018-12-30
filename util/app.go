@@ -1,7 +1,6 @@
 package util
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/pkg/errors"
 	"os"
@@ -32,12 +31,4 @@ func CloseFile(file *os.File) {
 	if err != nil {
 		panic(errors.Wrapf(err, "failed to close %s", file.Name()))
 	}
-}
-
-func ReadTXTFile(file *os.File, lines chan string) {
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines <- scanner.Text()
-	}
-	close(lines)
 }
