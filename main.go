@@ -12,11 +12,27 @@ import (
 	"time"
 )
 
+type Type string
+
+const (
+	LOCAL Type = "LOCAL"
+)
+
 type ConfigurationFile struct {
-	MavenProjects []MavenProject `json:"mavenProjects"`
+	UpdateDependencies bool           `json:"updateDependencies"`
+	UpdateParent       bool           `json:"updateParent"`
+	Includes           []Dependency   `json:"includes"`
+	Excludes           []Dependency   `json:"excludes"`
+	MavenProjects      []MavenProject `json:"mavenProjects"`
+}
+
+type Dependency struct {
+	GroupId    string `json:"groupId"`
+	ArtifactId string `json:"artifactId"`
 }
 
 type MavenProject struct {
+	Type          Type     `json:"type"`
 	BaseDirectory string   `json:"baseDirectory"`
 	Projects      []string `json:"projects"`
 }
@@ -55,19 +71,27 @@ func readConfigFile(configFile string) (*ConfigurationFile, error) {
 
 func handleConfigFile(configFile *ConfigurationFile) {
 	var waitGroup sync.WaitGroup
+	includes := make([]string, len(configFile.Includes))
+	excludes := make([]string, len(configFile.Excludes))
+	for index, include := range configFile.Includes {
+		includes[index] = include.GroupId + ":" + include.ArtifactId
+	}
+	for index, exclude := range configFile.Excludes {
+		excludes[index] = exclude.GroupId + ":" + exclude.ArtifactId
+	}
 	for _, mavenProject := range configFile.MavenProjects {
 		baseDir := mavenProject.BaseDirectory
 		for _, project := range mavenProject.Projects {
 			waitGroup.Add(1)
-			go updateMavenProject(baseDir, project, &waitGroup)
+			go updateMavenProject(baseDir, project, includes, excludes, configFile.UpdateDependencies, configFile.UpdateParent, &waitGroup)
 		}
 	}
 	waitGroup.Wait()
 }
 
-func updateMavenProject(baseDir string, project string, waitGroup *sync.WaitGroup) {
+func updateMavenProject(baseDir, project string, includes, excludes []string, updateDependencies, updateParent bool, waitGroup *sync.WaitGroup) {
 	pathToProject := path.Join(baseDir, project)
-	err := maven.UpdateProject(pathToProject)
+	err := maven.UpdateProject(pathToProject, includes, excludes, updateDependencies, updateParent)
 	if err != nil {
 		panic(err)
 	}
