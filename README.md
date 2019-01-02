@@ -66,6 +66,10 @@ Then run with a `-f` flag and provide the path to the configuration file.
 ## Future Implementations
 * SNAPSHOT support
   * Currently, only latest release versions are used
+* Additional Dependency Management support
+  * Gradle
+  * Go Modules
+  * NuGet
 * GIT support
   * Ability to commit and push dependency changes to GIT branch
 * Release
