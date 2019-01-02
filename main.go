@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/Piszmog/dependency-cli/maven"
 	"github.com/Piszmog/dependency-cli/util"
 	"github.com/pkg/errors"
@@ -16,6 +17,7 @@ type Type string
 
 const (
 	LOCAL Type = "LOCAL"
+	GIT   Type = "GIT"
 )
 
 type ConfigurationFile struct {
@@ -24,6 +26,7 @@ type ConfigurationFile struct {
 	Includes           []Dependency   `json:"includes"`
 	Excludes           []Dependency   `json:"excludes"`
 	MavenProjects      []MavenProject `json:"mavenProjects"`
+	GIT                Git            `json:"git"`
 }
 
 type Dependency struct {
@@ -37,16 +40,22 @@ type MavenProject struct {
 	Projects      []string `json:"projects"`
 }
 
+type Git struct {
+	CommitMessage string `json:"commitMessage"`
+}
+
 func main() {
 	defer util.Runtime(time.Now())
-	d := flag.String("f", "", "the file containing list of projects to update")
+	d := flag.String("f", "", "the configuration file to run with")
 	flag.Parse()
 	if len(*d) == 0 {
-		panic(errors.New("requires a file to run"))
+		flag.PrintDefaults()
+		return
 	}
 	configFile, err := readConfigFile(*d)
 	if err != nil {
-		panic(err)
+		fmt.Printf("failed to read configuration file - %+v\n", err)
+		return
 	}
 	handleConfigFile(configFile)
 }

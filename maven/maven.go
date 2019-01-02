@@ -46,7 +46,7 @@ func createAdditionalCommands(includes, excludes []string) (string, string) {
 }
 
 func updateProjectDependencies(projectRoot, includesList, excludesList string) error {
-	updateDependenciesCommand := createMavenCommand(projectRoot, updateDependenciesCommand, includesList, excludesList)
+	updateDependenciesCommand := createCommand(projectRoot, updateDependenciesCommand, includesList, excludesList)
 	fmt.Printf("Updating dependency versions for project %s...\n", projectRoot)
 	_, err := updateDependenciesCommand.Output()
 	if err != nil {
@@ -57,7 +57,7 @@ func updateProjectDependencies(projectRoot, includesList, excludesList string) e
 }
 
 func updateProjectParent(projectRoot, includesList, excludesList string) error {
-	updateParentCommand := createMavenCommand(projectRoot, updateParentCommand, includesList, excludesList)
+	updateParentCommand := createCommand(projectRoot, updateParentCommand, includesList, excludesList)
 	fmt.Printf("Updating parent version for project %s...\n", projectRoot)
 	_, err := updateParentCommand.Output()
 	if err != nil {
@@ -67,7 +67,7 @@ func updateProjectParent(projectRoot, includesList, excludesList string) error {
 	return nil
 }
 
-func createMavenCommand(projectRoot, mavenCommand, includesList, excludesList string) *exec.Cmd {
+func createCommand(projectRoot, mavenCommand, includesList, excludesList string) *exec.Cmd {
 	var mavenOperation []string
 	mavenOperation = append(mavenOperation, mavenCommand)
 	if len(includesList) != 0 {
